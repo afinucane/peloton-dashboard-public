@@ -750,3 +750,7 @@ to create a new database.
 Peloton Dashboard is an independent project and is not affiliated with, endorsed by, or sponsored by Peloton Interactive, Inc.
 
 Peloton and related trademarks are the property of their respective owners.
+
+# License
+
+Peloton Dashboard is open-source software licensed under the [MIT License](LICENSE).
