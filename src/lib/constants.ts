@@ -1,0 +1,1 @@
+export const MIN_ANALYSIS_MINUTES = 10;
