@@ -40,3 +40,13 @@ a {
     color-scheme: dark;
   }
 }
+
+/* Keep native select menus legible in dark mode, particularly on Windows. */
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #111827;
+  color: #e5e7eb;
+}
