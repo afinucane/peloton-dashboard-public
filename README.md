@@ -1,3 +1,5 @@
+[![Peloton Dashboard](docs/dashboard.png)](docs/dashboard.png)
+
 # Peloton Dashboard
 
 A self-hosted analytics dashboard for exploring your Peloton workout history.
