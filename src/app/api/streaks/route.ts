@@ -10,10 +10,6 @@ function readFromTo(req: Request) {
   };
 }
 
-function toDateOnly(iso: string) {
-  return iso.slice(0, 10);
-}
-
 function diffDays(a: string, b: string) {
   const da = new Date(a + "T00:00:00Z");
   const db = new Date(b + "T00:00:00Z");

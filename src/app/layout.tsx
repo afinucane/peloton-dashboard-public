@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Peloton Dashboard",
   description: "Self-hosted Peloton training analytics dashboard",
   applicationName: "Peloton Dashboard",

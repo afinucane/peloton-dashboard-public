@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type Ride = {
   id: number;
@@ -100,7 +101,7 @@ export default function StudioPage() {
     if (filter === "unmarked") return rides.filter((ride) => !ride.is_in_studio);
     return rides;
   }, [rides, filter]);
-  
+
   const studioCount = rides.filter((r) => r.is_in_studio).length;
   const unmarkedCount = rides.length - studioCount;
 
@@ -130,7 +131,11 @@ export default function StudioPage() {
     window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
 
     if (range !== "custom" || (customFrom && customTo)) {
-      loadRides();
+      const timer = window.setTimeout(() => {
+        void loadRides();
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -171,7 +176,7 @@ export default function StudioPage() {
             </div>
           </div>
 
-          <a
+          <Link
             href="/"
             style={{
               background: "rgba(255,255,255,0.03)",
@@ -184,7 +189,7 @@ export default function StudioPage() {
             }}
           >
             Back to dashboard
-          </a>
+          </Link>
         </header>
 
         <section
@@ -232,7 +237,7 @@ export default function StudioPage() {
             {loading ? "Loading…" : status || `${visibleRides.length} shown`}
           </span>
         </section>
-        
+
         <div
           style={{
             display: "flex",

@@ -84,10 +84,9 @@ export async function GET(req: Request) {
 
   for (const r of rows) {
     const date = toDateOnly(r.workout_timestamp);
-    const minutes = r.length_minutes || 0;
 
   let load = 0;
- 
+
   if (r.avg_watts && ftp) {
     const intensity = r.avg_watts / ftp;
     load = r.length_minutes * intensity * intensity;

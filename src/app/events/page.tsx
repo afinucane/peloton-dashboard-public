@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { getEventType, EVENT_TYPES } from "@/lib/events";
 import { formatNumber } from "@/lib/format";
+import Link from "next/link";
 
 type EventRow = {
   id: number;
@@ -106,6 +107,16 @@ export default function EventsPage() {
     setLoading(false);
   }
 
+  async function loadMilestoneStatus() {
+    const res = await fetch("/api/rides/milestones", {
+      cache: "no-store",
+    });
+
+    const data = (await res.json()) as MilestoneStatus;
+
+    setMilestoneStatusData(data);
+  }
+
 async function loadRidesForDate(date: string) {
   if (!date) {
     setRides([]);
@@ -151,31 +162,40 @@ async function loadRidesForDate(date: string) {
 }
 
   useEffect(() => {
-    loadEvents();
-    loadMilestoneStatus();
+    const timer = window.setTimeout(() => {
+      void loadEvents();
+      void loadMilestoneStatus();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+
   }, []);
 
   useEffect(() => {
     async function updateRides() {
       await loadRidesForDate(eventDate);
-  
+
       if (!pendingWorkoutId) {
         setWorkoutId("");
       }
     }
-  
+
     updateRides();
-  
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventDate]);
-  
+
   useEffect(() => {
     if (
       pendingWorkoutId !== null &&
       rides.some((ride) => ride.id === pendingWorkoutId)
     ) {
-      setWorkoutId(String(pendingWorkoutId));
-      setPendingWorkoutId(null);
+      const timer = window.setTimeout(() => {
+        setWorkoutId(String(pendingWorkoutId));
+        setPendingWorkoutId(null);
+      }, 0);
+
+      return () => window.clearTimeout(timer);
     }
   }, [rides, pendingWorkoutId]);
 
@@ -222,44 +242,44 @@ async function loadRidesForDate(date: string) {
 
   async function findMilestoneRide(overrideNumber?: number) {
     const rideNumber = overrideNumber ?? Number(milestoneNumber);
-  
+
     if (!Number.isInteger(rideNumber) || rideNumber <= 0) {
       setMilestoneStatus("Enter a valid ride number");
       return;
     }
-  
+
     setMilestoneNumber(String(rideNumber));
-  
+
     setFindingMilestone(true);
     setMilestoneStatus("Finding ride…");
-  
+
     try {
       const res = await fetch(`/api/rides/by-number/${rideNumber}`, {
         cache: "no-store",
       });
-  
+
       const data = await res.json();
-  
+
       if (!res.ok || !data.ok || !data.ride) {
         setMilestoneStatus(
           data.error || `Ride #${formatNumber(rideNumber)} not found`
         );
         return;
       }
-  
+
       const ride = data.ride as Ride;
       const rideDate = ride.workout_timestamp.slice(0, 10);
-  
+
       setEventType("milestone");
       setTitle(`Ride #${formatNumber(rideNumber)}`);
       setEventDate(rideDate);
-  
+
       /*
        * Changing eventDate causes the nearby-workout list to reload.
        * workoutId is set once that list contains the milestone ride.
        */
       setPendingWorkoutId(ride.id);
-  
+
       setMilestoneStatus(
         `Found Ride #${formatNumber(rideNumber)} · ${ride.title}${
           ride.instructor ? ` · ${ride.instructor}` : ""
@@ -270,16 +290,6 @@ async function loadRidesForDate(date: string) {
     } finally {
       setFindingMilestone(false);
     }
-  }
-  
-  async function loadMilestoneStatus() {
-    const res = await fetch("/api/rides/milestones", {
-      cache: "no-store",
-    });
-  
-    const data = (await res.json()) as MilestoneStatus;
-  
-    setMilestoneStatusData(data);
   }
 
   async function deleteEvent(id: number) {
@@ -300,7 +310,7 @@ async function loadRidesForDate(date: string) {
 
     setEvents((current) => current.filter((event) => event.id !== id));
     setStatus("Event deleted");
-    
+
     await loadMilestoneStatus();
   }
 
@@ -352,7 +362,7 @@ async function loadRidesForDate(date: string) {
             </div>
           </div>
 
-          <a
+          <Link
             href="/"
             style={{
               background: "rgba(255,255,255,0.03)",
@@ -365,9 +375,9 @@ async function loadRidesForDate(date: string) {
             }}
           >
             Back to dashboard
-          </a>
+          </Link>
         </header>
-        
+
         {milestoneStatusData && (
           <section
             style={{
@@ -387,7 +397,7 @@ async function loadRidesForDate(date: string) {
             >
               Milestone Progress
             </div>
-        
+
             <div
               style={{
                 display: "grid",
@@ -404,7 +414,7 @@ async function loadRidesForDate(date: string) {
                 >
                   Current
                 </div>
-        
+
                 <div
                   style={{
                     marginTop: 4,
@@ -414,7 +424,7 @@ async function loadRidesForDate(date: string) {
                   {milestoneStatusData.display.current}
                 </div>
               </div>
-        
+
               <div>
                 <div
                   style={{
@@ -424,7 +434,7 @@ async function loadRidesForDate(date: string) {
                 >
                   Next milestone
                 </div>
-        
+
                 <div
                   style={{
                     marginTop: 4,
@@ -434,7 +444,7 @@ async function loadRidesForDate(date: string) {
                   {milestoneStatusData.display.next}
                 </div>
               </div>
-        
+
               <div>
                 <div
                   style={{
@@ -444,7 +454,7 @@ async function loadRidesForDate(date: string) {
                 >
                   Remaining
                 </div>
-        
+
                 <div
                   style={{
                     marginTop: 4,
@@ -455,7 +465,7 @@ async function loadRidesForDate(date: string) {
                 </div>
               </div>
             </div>
-        
+
             {!milestoneStatusData.milestone_completed && (
               <div
                 style={{
@@ -469,7 +479,7 @@ async function loadRidesForDate(date: string) {
                   : `${milestoneStatusData.rides_remaining} rides to go.`}
               </div>
             )}
-        
+
             {milestoneStatusData.milestone_completed &&
               !milestoneStatusData.milestone_recorded && (
                 <div
@@ -489,7 +499,7 @@ async function loadRidesForDate(date: string) {
                   >
                     🎉 Milestone reached!
                   </div>
-        
+
                   <button
                     type="button"
                     onClick={() =>
@@ -510,7 +520,7 @@ async function loadRidesForDate(date: string) {
                   </button>
                 </div>
               )}
-        
+
             {milestoneStatusData.milestone_completed &&
               milestoneStatusData.milestone_recorded && (
                 <div
@@ -525,7 +535,7 @@ async function loadRidesForDate(date: string) {
               )}
           </section>
         )}
-        
+
         <section
           style={{
             border: "1px solid rgba(255,255,255,0.08)",
@@ -544,7 +554,7 @@ async function loadRidesForDate(date: string) {
           >
             Quick Milestone
           </div>
-        
+
           <div
             style={{
               fontSize: 12,
@@ -554,7 +564,7 @@ async function loadRidesForDate(date: string) {
           >
             Find a cycling workout by its lifetime ride number.
           </div>
-        
+
           <div
             style={{
               display: "flex",
@@ -570,7 +580,7 @@ async function loadRidesForDate(date: string) {
               }}
             >
               Ride number
-        
+
               <input
                 type="number"
                 min="1"
@@ -590,7 +600,7 @@ async function loadRidesForDate(date: string) {
                 style={inputStyle}
               />
             </label>
-        
+
             <button
               type="button"
               onClick={() => findMilestoneRide()}
@@ -608,7 +618,7 @@ async function loadRidesForDate(date: string) {
               {findingMilestone ? "Finding…" : "Find ride"}
             </button>
           </div>
-        
+
           {milestoneStatus && (
             <div
               style={{
@@ -737,7 +747,7 @@ async function loadRidesForDate(date: string) {
                 No workouts found around this date.
               </div>
             )}
-            
+
             <div
               style={{
                 fontSize: 11,

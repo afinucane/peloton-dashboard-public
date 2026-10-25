@@ -18,8 +18,8 @@ import {
   ScatterChart,
   Scatter,
 } from "recharts";
-
 import { ReferenceLine } from "recharts";
+import { useRouter } from "next/navigation";
 
 type Summary = {
   ok: boolean;
@@ -509,7 +509,7 @@ function buildHeatmapColumns(series: Array<{ date: string; load: number }>) {
 }
 
 function shouldShowCalibrationLine(
-  series: Array<{ [key: string]: any }>,
+  series: Array<Record<string, unknown>>,
   key: string,
   markerDate: string | null
 ) {
@@ -705,6 +705,7 @@ function Heatmap({
 }
 
 export default function Home() {
+  const router = useRouter();
   const { isMobile, isTablet } = useViewport();
 
   const [range, setRange] = useState<RangeKey>(getInitialRange);
@@ -837,7 +838,11 @@ useEffect(() => {
   window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
 
   if (range !== "custom" || (customFrom && customTo)) {
-    loadAll();
+    const timer = window.setTimeout(() => {
+      void loadAll();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1075,8 +1080,12 @@ useEffect(() => {
 
             <button
               onClick={async () => {
-                await fetch("/api/logout", { method: "POST" });
-                window.location.href = "/login";
+                const response = await fetch("/api/logout", { method: "POST" });
+
+                if (response.ok) {
+                  router.replace("/login");
+                  router.refresh();
+                }
               }}
               style={{
                 background: "rgba(255,255,255,0.03)",

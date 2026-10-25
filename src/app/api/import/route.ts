@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     )
   `);
 
-  const tx = db.transaction((items: any[]) => {
+  const tx = db.transaction((items: typeof rows) => {
     let inserted = 0;
 
     for (const r of items) {
